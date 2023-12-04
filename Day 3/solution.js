@@ -49,8 +49,6 @@ function getSymbolProductNumberSum(engineSchematic, symbols) {
         let xCoord = symbols[i][0];
         let yCoord = symbols[i][1];
 
-        //viewSquare(engineSchematic, yCoord, xCoord);
-
         symbolProductNumbersSum += sumAdjacentProductNumbers(engineSchematic, yCoord, xCoord-1, xCoord, xCoord+1);
     }
 
@@ -155,6 +153,7 @@ function getRightString(engineSchematic, yCoord, rightPtr) {
     return rightString;
 }
 
+/* Helper function to visualize "square" around a symbol
 function viewSquare(engineSchematic, yCoord, xCoord) {
     let topL = engineSchematic[yCoord-1][xCoord-1];
     let topM = engineSchematic[yCoord-1][xCoord];
@@ -176,5 +175,163 @@ function viewSquare(engineSchematic, yCoord, xCoord) {
 
     return;
 }
+*/
 
 console.log(`Q1: The sum of all of the part numbers in the engine schematic is: ` + solutionOne(inputArray)); // 514969
+
+
+
+function solutionTwo(engineSchematic) {
+    let totalGearRatio = 0;
+
+    let potentialGearCoords = getGearCoords(engineSchematic);
+    totalGearRatio += getGearRatio(engineSchematic, potentialGearCoords);
+
+    return totalGearRatio;
+}
+
+function getGearCoords(engineSchematic) {
+    let potentialGearCoords = [];
+
+    for (let y = 0; y < engineSchematic.length; y++) {
+        for (let x = 0; x < engineSchematic[y].length; x++) {
+            let currChar = engineSchematic[y][x];
+
+            if (currChar == '*') { // Potential "gears" are denoted with a '*' character. Must also have two adjacent product numbers to be a true "gear".
+                potentialGearCoords.push([x,y]);
+            }
+        }
+    }
+
+    return potentialGearCoords;
+}
+
+function getGearRatio(engineSchematic, potentialGears) {
+    let gearRatio = 0;
+
+    for (let i = 0; i < potentialGears.length; i++) {
+        let xCoord = potentialGears[i][0];
+        let yCoord = potentialGears[i][1];
+
+        let productNumbers = getAdjacentProductNumbers(engineSchematic, yCoord, xCoord-1, xCoord, xCoord+1);
+
+        gearRatio += productNumbers[0] * productNumbers[1];
+    }
+
+    return gearRatio;
+}
+
+function getAdjacentProductNumbers(engineSchematic, yCoord, left, middle, right) {
+
+    hasTopMid = isNumber(engineSchematic[yCoord-1][middle]);
+    hasBotMid = isNumber(engineSchematic[yCoord+1][middle]);
+    
+    
+    if (hasTopMid && hasBotMid) {
+        let top = getProductNumber(engineSchematic, yCoord-1, middle, true, true);
+        let bot = getProductNumber(engineSchematic, yCoord+1, middle, true, true)
+
+        return [top, bot];
+    }
+
+    else if (hasTopMid) {
+        let top = getProductNumber(engineSchematic, yCoord-1, middle, true, true);
+
+        let midLeft = getProductNumber(engineSchematic, yCoord, left, true, false);
+        if (midLeft !== 0) {
+            return [top, midLeft];
+        }
+
+        let midRight = getProductNumber(engineSchematic, yCoord, right, false, true);
+        if (midRight !== 0) {
+            return [top, midRight];
+        }
+
+        let botLeft = getProductNumber(engineSchematic, yCoord+1, left, true, false);
+        if (botLeft !== 0) {
+            return [top, botLeft];
+        } 
+
+        let botRight = getProductNumber(engineSchematic, yCoord+1, right, false, true);
+        if (botRight !== 0) {
+            return [top, botRight];
+        }
+
+        return [top, 0];
+    }
+
+    else if (hasBotMid) {
+        let bot = getProductNumber(engineSchematic, yCoord+1, middle, true, true);
+
+        let topLeft = getProductNumber(engineSchematic, yCoord-1, left, true, false);
+        if (topLeft !== 0) {
+            return [topLeft, bot];
+        }
+
+        let topRight = getProductNumber(engineSchematic, yCoord-1, right, false, true);
+        if (topRight !== 0) {
+            return [topRight, bot];
+        }
+
+        let midLeft = getProductNumber(engineSchematic, yCoord, left, true, false);
+        if (midLeft !== 0) {
+            return [midLeft, bot];
+        }
+
+        let midRight = getProductNumber(engineSchematic, yCoord, right, false, true);
+        if (midRight !== 0) {
+            return [midRight, bot];
+        }
+
+        return [0, bot];
+    }
+
+    else {
+        let productNumbers = [];
+
+        let topLeft = getProductNumber(engineSchematic, yCoord-1, left, true, false);
+        if (topLeft !== 0) {
+            productNumbers.push(topLeft);
+        }
+
+        let topRight = getProductNumber(engineSchematic, yCoord-1, right, false, true);
+        if (topRight !== 0) {
+            productNumbers.push(topRight);
+        }   
+
+        let midLeft = getProductNumber(engineSchematic, yCoord, left, true, false);
+        if (midLeft !== 0) {
+            productNumbers.push(midLeft);
+        }
+
+        let midRight = getProductNumber(engineSchematic, yCoord, right, false, true);
+        if (midRight !== 0) {
+            productNumbers.push(midRight);
+        }
+
+        let botLeft = getProductNumber(engineSchematic, yCoord+1, left, true, false);
+        if (botLeft !== 0) {
+            productNumbers.push(botLeft);
+        }
+
+        let botRight = getProductNumber(engineSchematic, yCoord+1, right, false, true);
+        if (botRight !== 0) {
+            productNumbers.push(botRight);
+        }
+
+        if (productNumbers.length < 2) { // If productNumbers has less than two product numbers, fill productNumbers with 0's.
+            if (productNumbers.length == 0) { 
+                productNumbers.push(0);
+                productNumbers.push(0);
+            }
+            
+            else {
+                productNumbers.push(0);
+            }
+        }
+
+        return productNumbers;
+    }
+}
+
+console.log('Q2: The sum of all of the gear ratios in the engine schematic is: ' + solutionTwo(inputArray)); // 78915902
