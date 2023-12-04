@@ -1,7 +1,5 @@
 const {readFileSync, promises: fsPromises} = require('fs');
 
-const numbers = new Set(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']);
-
 function isNumber(char) {
     if (Object.is(parseInt(char), NaN))
         return false;
@@ -23,9 +21,7 @@ function solutionOne(engineSchematic) {
     let totalProductNumbersSum = 0;
 
     let symbolCoords = getSymbolCoords(engineSchematic);
-    totalProductNumbersSum += getAdjacentProductNumberSum(engineSchematic, symbolCoords);
-
-    //console.log('Coords of symbols: ' + symbolCoords);
+    totalProductNumbersSum += getSymbolProductNumberSum(engineSchematic, symbolCoords);
 
     return totalProductNumbersSum;
 }
@@ -35,10 +31,9 @@ function getSymbolCoords(engineSchematic) {
 
     for (let y = 0; y < engineSchematic.length; y++) {
         for (let x = 0; x < engineSchematic[y].length; x++) {
-            //console.log(engineSchematic[y][x]);
             let currChar = engineSchematic[y][x];
 
-            if (currChar !== '.' && !numbers.has(currChar)) { // "Symbol" is any char that is not a period or a number.
+            if (currChar !== '.' && !isNumber(currChar)) { // "Symbol" is any char that is not a period or a number.
                 symbolCoords.push([x,y]);
             }
         }
@@ -47,98 +42,95 @@ function getSymbolCoords(engineSchematic) {
     return symbolCoords;
 }
 
-function getAdjacentProductNumberSum(engineSchematic, symbols) {
-    // let xCoord = symbols[0][0];
-    // let yCoord = symbols[0][1];
-    let adjacentProductNumbersSum = 0;
+function getSymbolProductNumberSum(engineSchematic, symbols) {
+    let symbolProductNumbersSum = 0;
 
     for (let i = 0; i < symbols.length; i++) {
         let xCoord = symbols[i][0];
         let yCoord = symbols[i][1];
 
-        viewSquare(engineSchematic, yCoord, xCoord);
+        //viewSquare(engineSchematic, yCoord, xCoord);
 
-        adjacentProductNumbersSum += getTopBottomRowSum(engineSchematic, yCoord-1, xCoord-1, xCoord, xCoord+1); // Check top row
-        adjacentProductNumbersSum += getMiddleRowSum(engineSchematic, yCoord, xCoord-1, xCoord+1); // Check middle row
-        adjacentProductNumbersSum += getTopBottomRowSum(engineSchematic, yCoord+1, xCoord-1, xCoord, xCoord+1); // Check bottom row
+        symbolProductNumbersSum += sumAdjacentProductNumbers(engineSchematic, yCoord, xCoord-1, xCoord, xCoord+1);
     }
 
-    return adjacentProductNumbersSum;
+    return symbolProductNumbersSum;
 }
 
-function getTopBottomRowSum(engineSchematic, yCoord, left, middle, right) {
-    let productNumber;
-
-    if (isNumber(engineSchematic[yCoord][middle])) { // Check if Top-Middle is a number, check left and right of number.
-        productNumber = getProductNumber(engineSchematic, yCoord, middle, true, true);
-        console.log(productNumber);
-
-        return productNumber;
-    }
-
-    else { // If Top-Middle is not a number, check top corners.
-        let leftProductNumber = 0;
-        let rightProductNumber = 0;
-
-        if (isNumber(engineSchematic[yCoord][left])) {
-            leftProductNumber = getProductNumber(engineSchematic, yCoord, left, true, false); // Left corner
-        }
-        
-        if (isNumber(engineSchematic[yCoord][right])) {
-            rightProductNumber = getProductNumber(engineSchematic, yCoord, right, false, true); // Right corner
-
-        }
-
-        console.log(leftProductNumber, rightProductNumber);
-        
-        return leftProductNumber + rightProductNumber;
-    }
-}
-
-function getMiddleRowSum(engineSchematic, yCoord, left, right) {
-    let leftProductNumber = 0;
-    let rightProductNumber = 0;
-
-    if (isNumber(engineSchematic[yCoord][left])) {
-        leftProductNumber = getProductNumber(engineSchematic, yCoord, left, true, false); // Middle left
-    }
+function sumAdjacentProductNumbers(engineSchematic, yCoord, left, middle, right) {
+    hasTopMid = isNumber(engineSchematic[yCoord-1][middle]);
+    hasBotMid = isNumber(engineSchematic[yCoord+1][middle]);
     
-    if (isNumber(engineSchematic[yCoord][right])) {
-        rightProductNumber = getProductNumber(engineSchematic, yCoord, right, false, true); // Middle right
+    
+    if(hasTopMid && hasBotMid) {
+        let top = getProductNumber(engineSchematic, yCoord-1, middle, true, true);
+        let midLeft = getProductNumber(engineSchematic, yCoord, left, true, false);
+        let midRight = getProductNumber(engineSchematic, yCoord, right, false, true);
+        let bot = getProductNumber(engineSchematic, yCoord+1, middle, true, true)
 
+        return top + midLeft + midRight + bot;
     }
 
-    console.log('middle row: ', leftProductNumber, rightProductNumber);
+    else if(hasTopMid) {
+        let top = getProductNumber(engineSchematic, yCoord-1, middle, true, true);   
+        let midLeft = getProductNumber(engineSchematic, yCoord, left, true, false);
+        let midRight = getProductNumber(engineSchematic, yCoord, right, false, true);
+        let botLeft = getProductNumber(engineSchematic, yCoord+1, left, true, false);    
+        let botRight = getProductNumber(engineSchematic, yCoord+1, right, false, true);
 
-    return leftProductNumber + rightProductNumber;
+        return top + midLeft + midRight + botLeft + botRight;
+    }
+
+    else if(hasBotMid) {
+        let topLeft = getProductNumber(engineSchematic, yCoord-1, left, true, false);
+        let topRight = getProductNumber(engineSchematic, yCoord-1, right, false, true);
+        let midLeft = getProductNumber(engineSchematic, yCoord, left, true, false);
+        let midRight = getProductNumber(engineSchematic, yCoord, right, false, true);
+        let bot = getProductNumber(engineSchematic, yCoord+1, middle, true, true);
+
+        return topLeft + topRight + midLeft + midRight + bot;
+    }
+
+    else {
+        let topLeft = getProductNumber(engineSchematic, yCoord-1, left, true, false); 
+        let topRight = getProductNumber(engineSchematic, yCoord-1, right, false, true); 
+        let midLeft = getProductNumber(engineSchematic, yCoord, left, true, false); 
+        let midRight = getProductNumber(engineSchematic, yCoord, right, false, true);
+        let botLeft = getProductNumber(engineSchematic, yCoord+1, left, true, false);
+        let botRight = getProductNumber(engineSchematic, yCoord+1, right, false, true);
+
+        return topLeft + topRight + midLeft + midRight + botLeft + botRight;
+    }        
 }
 
 function getProductNumber(engineSchematic, yCoord, ptr, doLeft, doRight) {
     let productNumberArray = [];
-    let productNumber;
-
-    if (doLeft) {
-        let leftString = getLeftString(engineSchematic, yCoord, ptr-1);
-        for (let i = 0; i < leftString.length; i++) {
-            productNumberArray.push(leftString[i]);
-        }
-    }
-
-    productNumberArray.push(engineSchematic[yCoord][ptr]);
-
-    if (doRight) {
-        let rightString = getRightString(engineSchematic, yCoord, ptr+1);
-        for (let i = 0; i < rightString.length; i++) {
-            productNumberArray.push(rightString[i]);
-        }
-    }
     
-    productNumber = productNumberArray.join('');
-    
-    if (isNumber(productNumber)) // If there is a product number, convert to Int.
+    if (isNumber(engineSchematic[yCoord][ptr])) {
+        if (doLeft) {
+            let leftString = getLeftString(engineSchematic, yCoord, ptr-1);
+            for (let i = 0; i < leftString.length; i++) {
+                productNumberArray.push(leftString[i]);
+            }
+        }
+
+        productNumberArray.push(engineSchematic[yCoord][ptr]);
+
+        if (doRight) {
+            let rightString = getRightString(engineSchematic, yCoord, ptr+1);
+            for (let i = 0; i < rightString.length; i++) {
+                productNumberArray.push(rightString[i]);
+            }
+        }
+
+        let productNumber = productNumberArray.join('');
+        
         return parseInt(productNumber);
-    else // Otherwise, do nothing.
+    }
+
+    else {
         return 0;
+    }
 }
 
 function getLeftString(engineSchematic, yCoord, leftPtr) {
