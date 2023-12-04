@@ -62,7 +62,7 @@ function sumAdjacentProductNumbers(engineSchematic, yCoord, left, middle, right)
     hasBotMid = isNumber(engineSchematic[yCoord+1][middle]);
     
     
-    if(hasTopMid && hasBotMid) {
+    if (hasTopMid && hasBotMid) {
         let top = getProductNumber(engineSchematic, yCoord-1, middle, true, true);
         let midLeft = getProductNumber(engineSchematic, yCoord, left, true, false);
         let midRight = getProductNumber(engineSchematic, yCoord, right, false, true);
@@ -71,7 +71,7 @@ function sumAdjacentProductNumbers(engineSchematic, yCoord, left, middle, right)
         return top + midLeft + midRight + bot;
     }
 
-    else if(hasTopMid) {
+    else if (hasTopMid) {
         let top = getProductNumber(engineSchematic, yCoord-1, middle, true, true);   
         let midLeft = getProductNumber(engineSchematic, yCoord, left, true, false);
         let midRight = getProductNumber(engineSchematic, yCoord, right, false, true);
@@ -81,7 +81,7 @@ function sumAdjacentProductNumbers(engineSchematic, yCoord, left, middle, right)
         return top + midLeft + midRight + botLeft + botRight;
     }
 
-    else if(hasBotMid) {
+    else if (hasBotMid) {
         let topLeft = getProductNumber(engineSchematic, yCoord-1, left, true, false);
         let topRight = getProductNumber(engineSchematic, yCoord-1, right, false, true);
         let midLeft = getProductNumber(engineSchematic, yCoord, left, true, false);
