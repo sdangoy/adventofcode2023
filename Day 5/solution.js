@@ -8,230 +8,90 @@ function syncReadFile(filename) {
     return arr;
 }
 
-const inputArray = syncReadFile('sample.txt');
+const inputArray = syncReadFile('input.txt');
 
 function solutionOne(almanacData) {
-    let lowestNumber = Infinity;
+    let lowestPosition = Infinity;
+    let mapInstructions = [];
 
-    let seedsMap = getSeeds(almanacData[0]);
+    let updatedMap = getInitialSources(almanacData[0]);
 
-    // Seed -> Soil
-    for (let i = 3; i < 5; i++) {
-        seedsMap = updateSeedsMap(seedsMap, almanacData[i]);
-    }
+    for (let i = 2; i <= almanacData.length; i++) { // Start at first map instruction in seed-to-soil map to the end of the humidity-to-location map.
+        if (almanacData[i] == '' || i === almanacData.length) { // At the end of each map, perform all of the map instructions and clear map instruction array.
+            updatedMap = convertMap(mapInstructions, updatedMap);
+            updatedMap = updateMap(updatedMap);        
+            mapInstructions = [];
+        }
 
-    let updatedSeedsMap = new Map();
-
-    for (let seed of seedsMap.values()) {
-        updatedSeedsMap.set(seed, seed);
-    }
-
-    seedsMap.clear();
-
-    for (let seed of updatedSeedsMap.values()) {
-        seedsMap.set(seed, seed);
-    }
-
-    updatedSeedsMap.clear();
-
-    console.log('Soil:');
-    console.log(seedsMap);
-
-
-    // Soil -> Fertilizer
-    for (let i = 7; i < 11; i++) {
-        seedsMap = updateSeedsMap(seedsMap, almanacData[i]);
-    }
-
-    for (let seed of seedsMap.values()) {
-        updatedSeedsMap.set(seed, seed);
-    }
-
-    seedsMap.clear();
-
-    for (let seed of updatedSeedsMap.values()) {
-        seedsMap.set(seed, seed);
-    }
-
-    updatedSeedsMap.clear();
-
-    console.log('Fertilizer:');
-    console.log(seedsMap);
-
-
-    // Fertilizer -> Water
-    for (let i = 12; i < 17; i++) {
-        seedsMap = updateSeedsMap(seedsMap, almanacData[i]);
-    }
-
-    for (let seed of seedsMap.values()) {
-        updatedSeedsMap.set(seed, seed);
-    }
-
-    seedsMap.clear();
-
-    for (let seed of updatedSeedsMap.values()) {
-        seedsMap.set(seed, seed);
-    }
-
-    updatedSeedsMap.clear();
-
-    console.log('Water:');
-    console.log(seedsMap);
-
-
-    // Water -> Light
-    for (let i = 18; i < 21; i++) {
-        seedsMap = updateSeedsMap(seedsMap, almanacData[i]);
-    }
-
-    for (let seed of seedsMap.values()) {
-        updatedSeedsMap.set(seed, seed);
-    }
-
-    seedsMap.clear();
-
-    for (let seed of updatedSeedsMap.values()) {
-        seedsMap.set(seed, seed);
-    }
-
-    updatedSeedsMap.clear();
-
-    console.log('Light:');
-    console.log(seedsMap);
-
-
-    // Light -> Temperature
-    for (let i = 22; i < 26; i++) {
-        seedsMap = updateSeedsMap(seedsMap, almanacData[i]);
-    }
-
-    for (let seed of seedsMap.values()) {
-        updatedSeedsMap.set(seed, seed);
-    }
-
-    seedsMap.clear();
-
-    for (let seed of updatedSeedsMap.values()) {
-        seedsMap.set(seed, seed);
-    }
-
-    updatedSeedsMap.clear();
-
-    console.log('Temperature:');
-    console.log(seedsMap);
-
-
-    // Temperature -> Humidity
-    for (let i = 27; i < 30; i++) {
-        seedsMap = updateSeedsMap(seedsMap, almanacData[i]);
-    }
-
-    for (let seed of seedsMap.values()) {
-        updatedSeedsMap.set(seed, seed);
-    }
-
-    seedsMap.clear();
-
-    for (let seed of updatedSeedsMap.values()) {
-        seedsMap.set(seed, seed);
-    }
-
-    updatedSeedsMap.clear();
-
-    console.log('Humidity:');
-    console.log(seedsMap);
-
-
-    // Humidity -> Location
-    for (let i = 31; i < 33; i++) {
-        seedsMap = updateSeedsMap(seedsMap, almanacData[i]);
-    }
-
-    for (let seed of seedsMap.values()) {
-        updatedSeedsMap.set(seed, seed);
-    }
-
-    seedsMap.clear();
-
-    for (let seed of updatedSeedsMap.values()) {
-        seedsMap.set(seed, seed);
-    }
-
-    updatedSeedsMap.clear();
-
-    console.log('Location:');
-    console.log(seedsMap);
-
-    for (let seed of seedsMap.values()) {
-        if (seed < lowestNumber) {
-            lowestNumber = seed;
+        else if (almanacData[i].match(/(\d+)/)) { // Find strings containing only numbers (map instructions) and add to map instruction array.
+            mapInstructions.push(almanacData[i]);
         }
     }
 
-    return lowestNumber;
-}
-
-function getSeeds(seedsString) {
-    let startIndex = seedsString.indexOf(' ');
-    let substring = seedsString.slice(startIndex + 1);
-    let seeds = substring.split(' ');
-    let seedsMap = new Map();
-
-    for (let seed of seeds) {
-        let seedNumber = parseInt(seed);
-        let destination = parseInt(seed); // Any source number that aren't mapped correspond to the same destination number. This is default.
-        seedsMap.set(seedNumber, destination);
-    }
-
-    return seedsMap;
-}
-
-function updateSeedsMap(seedsMap, mapInfo) {
-    //console.log(seedsMap);
-    console.log(mapInfo);
-
-    mapInfo = mapInfo.split(' ');
-
-    // console.log(mapInfo);
-
-    let range = parseInt(mapInfo[2]);
-    //console.log('range: ' + range);
-    let destination = parseInt(mapInfo[0]);
-    //console.log('destination: ' + destination);
-    let source = parseInt(mapInfo[1]);
-    //console.log('source: ' + source)
-
-    for (let i = 0; i < range; i++) {
-        //console.log(source + i);
-        if (seedsMap.has(source + i)) {
-            console.log('HAS: ' + (source + i));
-            seedsMap.set(source + i, destination + i);
-            console.log(seedsMap);
+    updatedMap.forEach((value, key) => { // Find the lowest position out of the inital seeds.
+        if(key < lowestPosition) {
+            lowestPosition = value;
         }
-    }
+    })
 
-    return seedsMap;
+    return lowestPosition;
 }
 
-function getDestinations(destination, range) {
-    let destinationRange = [];
+function getInitialSources(initalSources) {
+    let startIndex = initalSources.indexOf(' '); 
+    let substring = initalSources.slice(startIndex + 1); // Get only the inital sources.
+    let initialSourcesArray = substring.split(' ');
+    let sourcesMap = new Map();
 
-    for (let i = 0; i < range; i++) {
-        destinationRange.push(destination + i);
+    for (let currentSource of initialSourcesArray) {
+        sourcesMap.set(parseInt(currentSource), parseInt(currentSource)); // Any source number that aren't mapped correspond to the same destination number. This is default.
     }
 
-    return destinationRange;
+    return sourcesMap;
 }
 
-function getSources(source, range) {
-    let sourceRange = [];
+function convertMap(instructions, sources) {
 
-    for (let i = 0; i < range; i++) {
-        sourceRange.push(source + i);
+    for (let i = 0; i < instructions.length; i++) { // Go through each instruction of a map.
+        let instructionInfo = instructions[i].split(' ');
+        let startSource = parseInt(instructionInfo[1]);
+        let startDestination = parseInt(instructionInfo[0]);
+        let range = parseInt(instructionInfo[2]);
+
+        sources = convertSourceToDestination(sources, startSource, startDestination, range);
     }
 
-    return sourceRange;
+    return sources;
 }
 
-console.log(`Q1: The lowest location number that corresponds to any of the initial seed numbers is: ` + solutionOne(inputArray));
+function convertSourceToDestination(sources, startSource, startDestination, range) {
+    let newSources = new Map();
+
+    sources.forEach((value, key) => {
+        if (!newSources.has(key)) { // If source has not already been updated, update to new value. 
+            if (key >= startSource && key <= (startSource + range - 1)) { // In this situation, the starting source is included in range. Hence the -1.
+                let difference = key - startSource;
+                let newDestination = startDestination + difference;
+                newSources.set(key, newDestination);
+            }
+    
+            else { // If source has already been updated, keep same value. DO NOT UPDATE AGAIN.
+                newSources.set(key, value);
+            }
+        }
+    })
+    
+    return newSources;
+}
+
+function updateMap(mapToUpdate) {
+    let newMap = new Map();
+
+    mapToUpdate.forEach((value) => {
+        newMap.set(value, value); // At the end of each map, the destinations become the new sources.
+    });
+
+    return newMap;
+}
+
+console.log(`Q1: The lowest location number that corresponds to any of the initial seed numbers is: ` + solutionOne(inputArray)); // 388071289
